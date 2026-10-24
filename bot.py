@@ -1,25 +1,9 @@
 import os
-import threading
 import asyncio
-from flask import Flask
 import discord
 from discord import app_commands
 from discord.ui import Modal, TextInput, View, Button
 
-# Render Web Server (Prevents deploy timeouts)
-app = Flask(__name__)
-
-@app.route('/')
-def home():
-    return "Ticket Bot Active", 200
-
-def run_flask():
-    port = int(os.environ.get("PORT", 3000))
-    app.run(host="0.0.0.0", port=port)
-
-threading.Thread(target=run_flask, daemon=True).start()
-
-# Bot Core Setup
 class TicketBot(discord.Client):
     def __init__(self):
         intents = discord.Intents.default()
@@ -35,7 +19,6 @@ class TicketBot(discord.Client):
 
 bot = TicketBot()
 
-# Button Interaction Logic
 class PersistentTicketView(View):
     def __init__(self, category_id: int, support_role_id: int):
         super().__init__(timeout=None)
@@ -98,7 +81,6 @@ class PersistentTicketView(View):
         await ticket_channel.send(content=mention_str, embed=welcome_embed, view=close_view)
         await interaction.followup.send(f"✅ Ticket opened: {ticket_channel.mention}", ephemeral=True)
 
-# Modal Pop-up Layout
 class TicketConfigModal(Modal, title="Configure Panel Content"):
     panel_title = TextInput(label="Panel Embed Title", placeholder="e.g., Support Ticket Desk", required=True)
     panel_description = TextInput(label="Panel Embed Description", style=discord.TextStyle.paragraph, placeholder="Describe how users can get support here...", required=True)
@@ -121,7 +103,6 @@ class TicketConfigModal(Modal, title="Configure Panel Content"):
         await interaction.channel.send(embed=embed, view=view)
         await interaction.followup.send("✅ Ticket panel successfully deployed!", ephemeral=True)
 
-# Main Slash Command
 @bot.tree.command(name="ticket_panel", description="Setup the interactive ticket panel system")
 @app_commands.checks.has_permissions(manage_guild=True)
 @app_commands.describe(category="The Category folder for new tickets", support_role="The support role notified on entry")
@@ -134,4 +115,3 @@ async def on_ready():
     print(f"🚀 Bot is online as {bot.user}")
 
 bot.run(os.environ.get("DISCORD_TOKEN"))
-        
