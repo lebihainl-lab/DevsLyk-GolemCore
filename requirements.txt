@@ -1,2 +1,3 @@
 discord.py
 Flask
+chat-exporter==1.7.3
